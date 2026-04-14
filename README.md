@@ -18,7 +18,7 @@ HavenPoint is a full stack web application that allows users to explore and book
 * **Database:** MongoDB Atlas
 * **Authentication:** Passport.js
 * **Image Storage:** Cloudinary
-* **Maps:** Mapbox API
+
 
 ## Installation
 
