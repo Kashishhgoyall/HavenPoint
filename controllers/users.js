@@ -1,43 +1,57 @@
-const User = require("../models/user.js");
+const User = require('../models/user.js');
 
-module.exports.renderSignupForm = (req, res) => {
-  res.render("users/signup.ejs");
-};
+module.exports.signUpForm = (req, res) => {
+    res.render('users/signup');
+}
 
-module.exports.signup = async (req, res) => {
-  try {
-    let { username, email, password } = req.body;
-    let newUser = new User({ email, username });
-    const registeredUser = await User.register(newUser, password);
-    req.login(registeredUser, (err) => {
-      if (err) {
-        return next(err);
-      }
-      req.flash("success", "Welcome to HavenPoint!");
-      res.redirect("/listings");
-    });
-  } catch (error) {
-    req.flash("error", error.message);
-    res.redirect("/signup");
-  }
-};
+module.exports.signUp = async (req, res) => {
+    try{
 
-module.exports.renderLoginForm = (req, res) => {
-  res.render("users/login.ejs");
-};
+        let { username, email, password } = req.body;
 
-module.exports.login = async (req, res) => {
-  req.flash("success", "Welcome back to HavenPoint!");
-  let redirectUrl = res.locals.redirectUrl || "/listings";
-  res.redirect(redirectUrl);
-};
+        let newUser = new User({ username, email });
+        let registeredUser = await User.register(newUser, password);
 
-module.exports.logout = (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
+        console.log(registeredUser);
+
+        req.login(registeredUser, (err) => {
+            if(err) {
+                return next(err);
+            }
+
+            req.flash('success', `Welcome to HavenPoint, ${username}! 🚀 You are all set to explore.`);
+            res.redirect('/listings');
+        });
+
+    } catch(e) {
+
+        req.flash('error', e.message);
+        res.redirect('/signup');
+
     }
-    req.flash("success", "You are logged out!");
-    res.redirect("/listings");
-  });
-};
+
+}
+
+module.exports.logInForm = (req, res) => {
+    res.render('users/login');
+}
+
+module.exports.logIn = async (req, res) => {
+    let { username } = req.body;
+
+    req.flash('success', `Welcome back to HavenPoint, ${username}! 🚀 You are all set to explore.`);
+
+    let redirectUrl = res.locals.redirectUrl || '/listings';
+    res.redirect(redirectUrl);
+}
+
+module.exports.logOut = (req, res, next) => {
+    req.logout((err) => {
+        if(err) {
+            return next(err);
+        }
+
+        req.flash('success', 'You have signed out safely. Safe travels!');
+        res.redirect('/');
+    });
+}

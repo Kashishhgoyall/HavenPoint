@@ -1,186 +1,134 @@
-const Listing = require("../models/listing");
-const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
-const mapToken = process.env.MAP_TOKEN;
-const geoCodingClient = mbxGeocoding({ accessToken: mapToken });
+const Listing = require('../models/listing.js');
+const getGeoData = require('../utils/geoData.js');
 
 module.exports.index = async (req, res) => {
-  let allListings = await Listing.find();
-  res.render("./listings/index.ejs", { allListings });
-};
+    const { category, location } = req.query;
+    
+    let query = {};
+    
+    if (category) {
+        query.category = category;
+        
+    } else if (location) {
+        const searchWords = location.split(" ");
 
-module.exports.renderNewForm = (req, res) => {
-  res.render("listings/new.ejs");
-};
+        const allQueries = searchWords.map(word => ({
+            $or: [
+                { location: new RegExp(word, 'i') },
+                { country: new RegExp(word, 'i') }
+            ]
+        }));
+
+        query.$or = allQueries;
+    }
+    
+    const allListings = await Listing.find(query);
+    
+    if (location && allListings.length === 0) {
+        req.flash('warning', `We couldn't find any listings for "${location}". Try another spot!`);
+        return res.redirect('/listings');
+    }
+    
+    res.render("listings/index", { allListings, selectedCategory: category });
+}
+
+module.exports.newListing = (req, res) => {
+    res.render('listings/new');
+}
+
+module.exports.createListing = async (req, res) => {
+    let listing = req.body.listing;
+    let geometry = await getGeoData(listing.location, listing.country);
+
+    if (!geometry) {
+        req.flash('error', 'Location not found! Please check the spelling or Country.');
+        return res.redirect('/listings/new');
+    }
+
+    let imageUrl = req.file.path;
+    let imageFilename = req.file.filename;
+
+    const newListing = new Listing(listing);
+    newListing.owner = req.user._id;
+    newListing.image = { url: imageUrl, filename: imageFilename };
+    newListing.geometry = geometry;
+    
+    await newListing.save();
+    console.log(newListing);
+
+    req.flash('success', 'New listing created! It is now live and visible to everyone.');
+    res.redirect('/listings');
+}
 
 module.exports.showListing = async (req, res) => {
-  let { id } = req.params;
-  let listing = await Listing.findById(id)
-    .populate({ path: "reviews", populate: { path: "author" } })
-    .populate("owner");
-  if (!listing) {
-    req.flash("error", "Listing you requested for does not exist!");
-    res.redirect("/listings");
-  }
-  res.render("listings/show.ejs", { listing });
-};
+    let { id } = req.params;
+    let listing = await Listing.findById(id)
+        .populate({
+            path: 'reviews',
+            populate: {
+                path: 'author',
+            },
+        })
+        .populate('owner');
 
-module.exports.createListing = async (req, res, next) => {
-  let response = await geoCodingClient
-    .forwardGeocode({
-      query: req.body.listing.location,
-      limit: 1,
-    })
-    .send();
-
-  let url = req.file.path;
-  let filename = req.file.filename;
-
-  const newListing = new Listing(req.body.listing);
-  newListing.owner = req.user._id;
-  newListing.image = { filename, url };
-  newListing.geometry = response.body.features[0].geometry;
-  await newListing.save();
-  req.flash("success", "New listing created!");
-  res.redirect("/listings");
-};
-
-module.exports.renderEditForm = async (req, res) => {
-  let { id } = req.params;
-  let listing = await Listing.findById(id);
-  if (!listing) {
-    req.flash("error", "Listing you trying to edit for does not exist!");
-    res.redirect("/listings");
-  }
-  imageUrl = listing.image.url;
-  imageUrl = imageUrl.replace("/upload", "/upload/w_250,h_160");
-  res.render("listings/edit.ejs", { listing, imageUrl });
-};
-
-module.exports.updateListing = async (req, res, next) => {
-  let { id } = req.params;
-  let response = await geoCodingClient
-    .forwardGeocode({
-      query: ` ${req.body.listing.location},${req.body.listing.country}`,
-      limit: 1,
-    })
-    .send();
-
-  req.body.listing.geometry = response.body.features[0].geometry;
-  let updatedListing = await Listing.findByIdAndUpdate(id, {
-    ...req.body.listing,
-  });
-
-  if (typeof req.file !== "undefined") {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    updatedListing.image = { url, filename };
-    await updatedListing.save();
-  }
-  req.flash("success", "Listing updated!");
-  res.redirect(`/listings/${id}`);
-};
-
-module.exports.filter = async (req, res, next) => {
-  let { id } = req.params;
-  let allListings = await Listing.find({ category: { $all: [id] } });
-  if (allListings.length != 0) {
-    res.locals.success = `Listings Filtered by ${id}!`;
-    res.render("listings/index.ejs", { allListings });
-  } else {
-    req.flash("error", `There is no any Listing for ${id}!`);
-    res.redirect("/listings");
-  }
-};
-
-module.exports.search = async (req, res) => {
-  if (input == "" || input == " " || !input || input == undefined) {
-    req.flash("error", "Please enter search query!");
-    res.redirect("/listings");
-  }
-
-  let input = req.query.q.trim().replace(/\s+/g, " ");
-  let data = input.split("");
-  let element = "";
-  let flag = false;
-  for (let index = 0; index < data.length; index++) {
-    if (index == 0 || flag) {
-      element = element + data[index].toUpperCase();
-    } else {
-      element = element + data[index].toLowerCase();
+    if (!listing) {
+        req.flash('error', 'Error! The listing you requested does not exist or was deleted.');
+        return res.redirect('/listings');
     }
-    flag = data[index] == " ";
-  }
+    
+    // console.log(listing);
+    res.render('listings/show', { listing });
+}
 
-  let allListings = await Listing.find({
-    title: { $regex: element, $options: "i" },
-  });
-  if (allListings.length != 0) {
-    res.locals.success = "Listings searched by Title!";
-    res.render("listings/index.ejs", { allListings });
-    return;
-  }
+module.exports.editListing = async (req, res) => {
+    let { id } = req.params;
+    let listing = await Listing.findById(id);
 
-  if (allListings.length == 0) {
-    allListings = await Listing.find({
-      category: { $regex: element, $options: "i" },
-    }).sort({ _id: -1 });
-    if (allListings.length != 0) {
-      res.locals.success = "Listings searched by Category!";
-      res.render("listings/index.ejs", { allListings });
-      return;
+    if (!listing) {
+        req.flash('error', 'Error! The listing you requested does not exist or was deleted.');
+        return res.redirect('/listings');
     }
-  }
-  if (allListings.length == 0) {
-    allListings = await Listing.find({
-      country: { $regex: element, $options: "i" },
-    }).sort({ _id: -1 });
-    if (allListings.length != 0) {
-      res.locals.success = "Listings searched by Country!";
-      res.render("listings/index.ejs", { allListings });
-      return;
+
+    res.render('listings/edit', { listing });
+}
+
+module.exports.updateListing = async (req, res) => {
+    let { id } = req.params;
+    let listing = req.body.listing;
+    let existingListing = await Listing.findById(id);
+
+    if (
+        existingListing.location !== listing.location ||
+        existingListing.country !== listing.country
+    ) {
+        let geometry = await getGeoData(listing.location, listing.country);
+
+        if (!geometry) {
+            req.flash('error', 'Location not found! Please check the spelling or Country.');
+            return res.redirect(`/listings/${id}/edit`);
+        }
+
+        listing.geometry = geometry;
     }
-  }
-
-  if (allListings.length == 0) {
-    allListings = await Listing.find({
-      location: { $regex: element, $options: "i" },
-    }).sort({ _id: -1 });
-    if (allListings.length != 0) {
-      res.locals.success = "Listings searched by Location!";
-      res.render("listings/index.ejs", { allListings });
-      return;
+    
+    if (req.file) {
+        let url = req.file.path;
+        let filename = req.file.filename;
+        listing.image = { url, filename };
     }
-  }
 
-  const intValue = parseInt(element, 10);
-  const intDec = Number.isInteger(intValue);
+    listing = await Listing.findByIdAndUpdate(id, { ...listing }, { new: true } );
 
-  if (allListings.length == 0 && intDec) {
-    allListings = await Listing.find({ price: { $lte: element } }).sort({
-      price: 1,
-    });
-    if (allListings.length != 0) {
-      res.locals.success = `Listings searched by price less than Rs ${element}!`;
-      res.render("listings/index.ejs", { allListings });
-      return;
-    }
-  }
-  if (allListings.length == 0) {
-    req.flash("error", "No listings found based on your search!");
-    res.redirect("/listings");
-  }
-};
+    console.log(listing);
 
-module.exports.destroyListing = async (req, res) => {
-  let { id } = req.params;
-  let deletedListing = await Listing.findByIdAndDelete(id);
-  console.log(deletedListing);
-  req.flash("success", "Listing deleted!");
-  res.redirect("/listings");
-};
+    req.flash('success', 'Listing updated! Your latest changes are now live on the website.');
+    res.redirect(`/listings/${id}`);
+}
 
-module.exports.reserveListing = async (req, res) => {
-  let { id } = req.params;
-  req.flash("success", "Reservation Details sent to your Email!");
-  res.redirect(`/listings/${id}`);
-};
+module.exports.deleteListing = async (req, res) => {
+    let { id } = req.params;
+    let listing = await Listing.findByIdAndDelete(id);
+    console.log(listing);
+    req.flash('success', 'Listing deleted! It has been successfully removed from your collection.');
+    res.redirect('/listings');
+}

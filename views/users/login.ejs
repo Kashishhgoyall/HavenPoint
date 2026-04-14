@@ -1,24 +1,54 @@
-<% layout("/layouts/boilerplate") %>
+<% layout('/layouts/boilerplate.ejs') %>
 
-    <body>
-        <div class="container mt-3">
-            <div class="row justify-content-center">
-                <div class="login-signup-form-inp">
-                    <h3 class="mb-3">Login on HavenPoint</h3>
-                    <form action="/login" method="post" novalidate class="needs-validation">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" name="username" id="username"
-                                placeholder="Enter Username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" name="password" id="password"
-                                placeholder="Enter Password" required>
-                        </div>
-                        <button class="btn btn-success">Login</button>
-                    </form>
+<div class="row mt-3 mb-5 d-flex" style="min-height: 61vh;">
+    <div class="col-12 col-md-6 offset-md-3">
+        <h1>Login to HavenPoint</h1><br>
+        <form action="/login" method="POST" novalidate class="needs-validation">
+            <!-- User Name -->
+            <div class="mb-3">
+                <label for="username" class="form-label">User Name</label>
+                <input
+                    id="username"
+                    type="text"
+                    name="username"
+                    placeholder="Enter User-Name"
+                    class="form-control"
+                    required
+                />
+                <div class="invalid-feedback">
+                    Enter a User-Name.
+                </div>
+                <div class="valid-feedback">
+                    Looks good!
                 </div>
             </div>
-        </div>
-    </body>
+
+            <!-- User Password -->
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    placeholder="Enter Password"
+                    class="form-control"
+                    required
+                />
+                <div class="invalid-feedback">
+                    Enter a Password.
+                </div>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+            <button class="btn btn-outline-success">Login</button>
+
+            <div class="mt-3  text-center">
+                <p>
+                    New to HavenPoint? 
+                    <a href="/signup" class="text-decoration-none fw-bold">Sign up</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,63 +1,69 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const Review = require("./review.js");
+const Review = require('./review.js');
 
 const listingSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-  },
-  image: {
-    filename: {
-      type: String,
+    title: {
+        type: String,
+        required: true,
     },
-    url: {
-      type: String,
+    description: String,
+    image: {
+        url: {
+            type: String,
+        },
+        filename: String,
     },
-  },
-  price: {
-    type: Number,
-  },
-  location: {
-    type: String,
-  },
-  country: {
-    type: String,
-  },
-  reviews: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Review",
+    price: {
+        type: Number,
+        default: 1,
     },
-  ],
-  owner: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-  geometry: {
-    type: {
-      type: String,
-      enum: ["Point"],
-      required: true,
+    location: String,
+    country: String,
+    reviews: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Review',
+    }],
+    owner: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
     },
-    coordinates: {
-      type: [Number],
-      required: true,
+    geometry: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            required: true
+        },
+        coordinates: {
+            type: [Number],
+            required: true
+        },
     },
-  },
-  category: {
-    type: String,
-  },
+    category: {
+        type:String,
+        enum: [
+            'Trending',
+            'Iconic City',
+            'Amazing Pools',
+            'Beach',
+            'Amazing Views',
+            'Cabins',
+            'Lakefront',
+            'Mountain',
+            'Castles',
+            'Camping',
+            'Farms',
+            'Arctic',
+        ],
+        required: true,
+    },
 });
 
-listingSchema.post("findOneAndDelete", async (listing) => {
-  if (listing) {
-    await Review.deleteMany({ _id: { $in: listing.reviews } });
-  }
-});
+listingSchema.post('findOneAndDelete', async (listing) => {
+    if (listing) {
+        await Review.deleteMany({ _id: {$in: listing.reviews }});
+    }
+})
 
-const Listing = mongoose.model("Listing", listingSchema);
+const Listing = mongoose.model('listing', listingSchema);
 module.exports = Listing;
