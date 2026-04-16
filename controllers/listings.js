@@ -2,35 +2,13 @@ const Listing = require('../models/listing.js');
 const getGeoData = require('../utils/geoData.js');
 
 module.exports.index = async (req, res) => {
-    const { category, location } = req.query;
-    
-    let query = {};
-    
-    if (category) {
-        query.category = category;
-        
-    } else if (location) {
-        const searchWords = location.split(" ");
+    const allListings = await Listing.find();   // ✅ ye line important
 
-        const allQueries = searchWords.map(word => ({
-            $or: [
-                { location: new RegExp(word, 'i') },
-                { country: new RegExp(word, 'i') }
-            ]
-        }));
-
-        query.$or = allQueries;
-    }
-    
-    const allListings = await Listing.find(query);
-    
-    if (location && allListings.length === 0) {
-        req.flash('warning', `We couldn't find any listings for "${location}". Try another spot!`);
-        return res.redirect('/listings');
-    }
-    
-    res.render("listings/index", { allListings, selectedCategory: category });
-}
+    res.render("listings/index", { 
+        allListings,
+        selectedCategory: req.query.category
+    });
+};
 
 module.exports.newListing = (req, res) => {
     res.render('listings/new');

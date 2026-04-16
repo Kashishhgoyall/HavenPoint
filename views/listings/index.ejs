@@ -9,57 +9,74 @@
             class="filters <%= category === selectedCategory ? 'active-filter' : '' %>"
             data-category="<%= category %>"
         >
-
             <i class="<%= listingCategories[category] %>"></i>
             <p><%= category %></p>
-
         </div>
 
     <% } %>
 
     <div class="tax-toggle">
         <div class="form-check-reverse form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault">
-            <label class="form-check-label" for="switchCheckDefault">Display total after Taxes</label>
+            <input class="form-check-input" type="checkbox" id="switchCheckDefault">
+            <label class="form-check-label">Display total after Taxes</label>
         </div>
     </div>
 </div>
 
-<p class="ms-3 mb-0 fw-bold">Find your next adventure <i class="fa-solid fa-arrow-right"></i></p>
+<p class="ms-3 mb-0 fw-bold">
+    Find your next adventure <i class="fa-solid fa-arrow-right"></i>
+</p>
 
-<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mb-5">
-    
-    <% for(let listings of allListings) { %>
+<!-- ================= CATEGORY SECTIONS ================= -->
 
-        <a href="/listings/<%= listings._id %>" class="listing-link">
-            <div class="card listing-card m-3">
+<% for(let category in listingCategories) { %>
 
-                <img
-                    src="<%= listings.image.url %>"
-                    class="card-img-top"
-                    alt="listing-img"
-                />
+    <h4 class="ms-3 mt-4"><%= category %></h4>
 
-                <div class="card-img-overlay">
-                    <b>
-                        <%= listings.title.split(' ')[0] %>
-                    </b>
-                </div>
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mb-4">
 
-                <div class="card-body">
-                    <p class="card-text">
-                        <b><%= listings.title %></b> <br>
-                        &#x20B9; <%= listings.price.toLocaleString('en-IN') %> / night
-                        &nbsp; <i class="gst">+18% gst</i>
-                    </p>
+        <% 
+        let filteredListings = allListings.filter(l => l.category === category);
+        %>
 
-                </div>
+        <% if(filteredListings.length > 0) { %>
 
-            </div>
-        </a>
+            <% for(let listings of filteredListings) { %>
 
-    <% } %>
-    
-</div>
+                <a href="/listings/<%= listings._id %>" class="listing-link">
+                    <div class="card listing-card m-3">
+
+                        <img
+                            src="<%= listings.image.url %>"
+                            class="card-img-top"
+                            alt="listing-img"
+                        />
+
+                        <div class="card-img-overlay">
+                            <b><%= listings.title.split(' ')[0] %></b>
+                        </div>
+
+                        <div class="card-body">
+                            <p class="card-text">
+                                <b><%= listings.title %></b> <br>
+                                &#x20B9; <%= listings.price.toLocaleString('en-IN') %> / night
+                                &nbsp; <i class="gst">+18% gst</i>
+                            </p>
+                        </div>
+
+                    </div>
+                </a>
+
+            <% } %>
+
+        <% } else { %>
+
+            <p class="ms-3 text-muted">No listings available</p>
+
+        <% } %>
+
+    </div>
+
+<% } %>
 
 <script src="/js/index.js"></script>

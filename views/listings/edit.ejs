@@ -36,10 +36,9 @@
                 <div class="card p-3 mb-3" style="border: 1px solid #dee2e6;">
 
                     <div class="mb-3">
-                        <img
-                            src="<%= listing.image.url %>"
-                            class="card-img-top s-img"
-                            alt="listing-img"
+                        <img 
+                            src="<%= listing.image?.url || 'https://via.placeholder.com/300' %>" 
+                            class="card-img-top"
                         />
                     </div>
                     
