@@ -1,40 +1,30 @@
-# HavenPoint 🏡
+# 🌍 HavenPoint
 
-HavenPoint is a full stack web application that allows users to explore and book vacation properties such as houses, villas, and farmhouses. Users can also add their own property listings to the platform.
+A full-stack travel listing web application inspired by Airbnb.
 
-## Features
+## 🚀 Live Demo
+👉 https://havenpoint.onrender.com
 
-* Browse and search property listings
-* Add and manage property listings
-* User authentication and login
-* Map integration for property locations
-* Image upload for listings
-* Reviews and ratings for properties
+## 🛠 Tech Stack
+- Node.js
+- Express.js
+- MongoDB
+- EJS
+- Cloudinary
+- Mapbox
 
-## Tech Stack
+## ✨ Features
+- User authentication (Login/Signup)
+- Create, edit, delete listings
+- Image upload via Cloudinary
+- Map integration
+- Reviews & ratings
+- Category & search filtering
 
-* **Frontend:** HTML, CSS, JavaScript, Bootstrap, EJS
-* **Backend:** Node.js, Express.js
-* **Database:** MongoDB Atlas
-* **Authentication:** Passport.js
-* **Image Storage:** Cloudinary
-
-
-## Installation
-
-1. Clone the repository
-2. Install dependencies
-
-npm install
-
-3. Start the server
-
-node server.js
-
-4. Open in browser
-
-http://localhost:3000
-
-## Author
-
-Kashish Goyal
+## ⚙️ Setup
+1. Clone repo
+2. Install dependencies:
+   npm install
+3. Add .env file
+4. Run:
+   node app.js
