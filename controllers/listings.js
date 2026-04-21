@@ -2,11 +2,25 @@ const Listing = require('../models/listing.js');
 const getGeoData = require('../utils/geoData.js');
 
 module.exports.index = async (req, res) => {
-    const allListings = await Listing.find();   // ✅ ye line important
+    let { category, location } = req.query;
 
-    res.render("listings/index", { 
+    let query = {};
+
+    // Category filter
+    if (category && category !== "All") {
+        query.category = category;
+    }
+
+    // Location search (case-insensitive)
+    if (location) {
+        query.location = { $regex: location, $options: "i" };
+    }
+
+    const allListings = await Listing.find(query);
+
+    res.render("listings/index", {
         allListings,
-        selectedCategory: req.query.category
+        selectedCategory: category || ""
     });
 };
 

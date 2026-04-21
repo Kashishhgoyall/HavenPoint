@@ -3,15 +3,21 @@
 <% block('style').append('index') %>
 
 <div class="filter">
+    <!-- ALL BUTTON -->
+    <a href="/listings" class="text-decoration-none text-dark">
+        <div class="filters <%= !selectedCategory ? 'active-filter' : '' %>">
+            <p>All</p>
+        </div>
+    </a>
+
     <% for(let category in listingCategories) { %>
 
-        <div
-            class="filters <%= category === selectedCategory ? 'active-filter' : '' %>"
-            data-category="<%= category %>"
-        >
-            <i class="<%= listingCategories[category] %>"></i>
-            <p><%= category %></p>
-        </div>
+        <a href="/listings?category=<%= category %>" class="text-decoration-none text-dark">
+            <div class="filters <%= category === selectedCategory ? 'active-filter' : '' %>">
+                <i class="<%= listingCategories[category] %>"></i>
+                <p><%= category %></p>
+            </div>
+        </a>
 
     <% } %>
 
@@ -27,56 +33,46 @@
     Find your next adventure <i class="fa-solid fa-arrow-right"></i>
 </p>
 
-<!-- ================= CATEGORY SECTIONS ================= -->
+<!-- ================= LISTINGS ================= -->
 
-<% for(let category in listingCategories) { %>
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mb-4">
 
-    <h4 class="ms-3 mt-4"><%= category %></h4>
+    <% if(allListings.length > 0) { %>
 
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mb-4">
+        <% for(let listings of allListings) { %>
 
-        <% 
-        let filteredListings = allListings.filter(l => l.category === category);
-        %>
+            <a href="/listings/<%= listings._id %>" class="listing-link">
+                <div class="card listing-card m-3">
 
-        <% if(filteredListings.length > 0) { %>
+                    <img
+                        src="<%= listings.image.url %>"
+                        class="card-img-top"
+                        alt="listing-img"
+                    />
 
-            <% for(let listings of filteredListings) { %>
-
-                <a href="/listings/<%= listings._id %>" class="listing-link">
-                    <div class="card listing-card m-3">
-
-                        <img
-                            src="<%= listings.image.url %>"
-                            class="card-img-top"
-                            alt="listing-img"
-                        />
-
-                        <div class="card-img-overlay">
-                            <b><%= listings.title.split(' ')[0] %></b>
-                        </div>
-
-                        <div class="card-body">
-                            <p class="card-text">
-                                <b><%= listings.title %></b> <br>
-                                &#x20B9; <%= listings.price.toLocaleString('en-IN') %> / night
-                                &nbsp; <i class="gst">+18% gst</i>
-                            </p>
-                        </div>
-
+                    <div class="card-img-overlay">
+                        <b><%= listings.title.split(' ')[0] %></b>
                     </div>
-                </a>
 
-            <% } %>
+                    <div class="card-body">
+                        <p class="card-text">
+                            <b><%= listings.title %></b> <br>
+                            &#x20B9; <%= listings.price.toLocaleString('en-IN') %> / night
+                            &nbsp; <i class="gst">+18% gst</i>
+                        </p>
+                    </div>
 
-        <% } else { %>
-
-            <p class="ms-3 text-muted">No listings available</p>
+                </div>
+            </a>
 
         <% } %>
 
-    </div>
+    <% } else { %>
 
-<% } %>
+        <p class="ms-3 text-muted">No listings found for this category</p>
+
+    <% } %>
+
+</div>
 
 <script src="/js/index.js"></script>
