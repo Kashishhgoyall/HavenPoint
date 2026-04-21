@@ -4,6 +4,7 @@ if (process.env.NODE_ENV != 'production') {
 
 const express = require('express');
 const app = express();
+app.set("trust proxy", 1);
 const mongoose = require('mongoose');
 const path = require('path');
 const methodOverride = require('method-override');
@@ -46,10 +47,7 @@ main()
     });
 
 async function main() {
-  await mongoose.connect(dbUrl, {
-      tls: true,                        // forces TLS
-      tlsAllowInvalidCertificates: true // only for local dev on Windows
-  });
+  await mongoose.connect(dbUrl);
   console.log('Connected to Database');
 }
 
@@ -69,13 +67,14 @@ const sessionOptions = {
     store,
     secret: mySecret,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-        // expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
     }
-}
+};
 
 app.use(session(sessionOptions));
 app.use(flash());
