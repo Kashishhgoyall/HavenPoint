@@ -100,33 +100,40 @@
       </li>
       <li><hr class="dropdown-divider"></li>
 
-      <li>
-        <a class="px-3 pt-2 fw-bold dropdown-item" href="/listings">Discover stays</a>
-      </li>
-      <li class="px-3 pb-1 text-muted small">
-        Browse top-rated listings for your next trip.
-      </li>
-      <li><hr class="dropdown-divider"></li>
-
-      <% if(currUser) { %>
-
         <li>
-          <a class="px-3 pt-2 fw-bold dropdown-item" href="/logout">Log out</a>
+          <a class="px-3 pt-2 fw-bold dropdown-item" href="/listings">Discover stays</a>
         </li>
         <li class="px-3 pb-1 text-muted small">
-          See you on your next trip.
+          Browse top-rated listings for your next trip.
         </li>
+        <li><hr class="dropdown-divider"></li>
 
-      <% } else { %>
+        <% if(currUser) { %>
+          <li>
+            <a class="px-3 pt-2 fw-bold dropdown-item" href="/orders">
+              <i class="fas fa-receipt me-2"></i>My Orders
+            </a>
+          </li>
+          <li class="px-3 pb-1 text-muted small">
+            Track your bookings and payments.
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <a class="px-3 pt-2 fw-bold dropdown-item" href="/logout">Log out</a>
+          </li>
+          <li class="px-3 pb-1 text-muted small">
+            See you on your next trip.
+          </li>
+        <% } else { %>
+          <li>
+            <a class="px-3 pt-2 fw-bold dropdown-item" href="/signup">Join HavenPoint</a>
+          </li>
+          <li class="px-3 pb-1 text-muted small">
+            Unlock exclusive offers and faster booking.
+          </li>
+        <% } %>  
 
-        <li>
-          <a class="px-3 pt-2 fw-bold dropdown-item" href="/signup">Join HavenPoint</a>
-        </li>
-        <li class="px-3 pb-1 text-muted small">
-          Unlock exclusive offers and faster booking.
-        </li>
 
-      <% } %>
 
     </ul>
     

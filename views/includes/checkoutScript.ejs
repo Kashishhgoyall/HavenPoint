@@ -1,0 +1,47 @@
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+document.querySelectorAll(".razorpay-btn").forEach(btn => {
+  btn.onclick = function () {
+
+    const listingId = this.dataset.listingId;
+    const price = this.dataset.price;
+
+    const checkIn = document.getElementById("checkIn").value;
+    const checkOut = document.getElementById("checkOut").value;
+    const guests = document.getElementById("guests").value;
+
+    if (!checkIn || !checkOut) {
+      alert("Select dates");
+      return;
+    }
+
+    const options = {
+      key: "<%= razorpayKey %>",
+      amount: price * 100,
+      currency: "INR",
+
+      handler: function (res) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "/orders/payment/success";
+
+        form.innerHTML = `
+          <input name="listingId" value="${listingId}" />
+          <input name="amount" value="${price}" />
+          <input name="checkIn" value="${checkIn}" />
+          <input name="checkOut" value="${checkOut}" />
+          <input name="guests" value="${guests}" />
+          <input name="razorpay_order_id" value="${res.razorpay_order_id}" />
+          <input name="razorpay_payment_id" value="${res.razorpay_payment_id}" />
+        `;
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+    };
+
+    new Razorpay(options).open();
+  };
+});
+</script>

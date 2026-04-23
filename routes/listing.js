@@ -16,6 +16,10 @@ router
         listingController.createListing
     );
 
+router.post('/:id/checkout/cod', isLoggedIn, listingController.checkoutCod);
+router.post('/:id/checkout/razorpay-order', isLoggedIn, listingController.createRazorpayOrder);
+router.post('/:id/checkout/verify', isLoggedIn, listingController.verifyPayment);
+
 // New Route:
 router.get('/new', isLoggedIn, listingController.newListing);
 

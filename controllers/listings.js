@@ -124,3 +124,83 @@ module.exports.deleteListing = async (req, res) => {
     req.flash('success', 'Listing deleted! It has been successfully removed from your collection.');
     res.redirect('/listings');
 }
+
+module.exports.checkoutCod = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const listing = await Listing.findById(id);
+        const userId = req.user._id;
+
+        req.flash('success', `COD booking confirmed for ${listing.title}! Pay ₹${listing.price.toLocaleString('en-IN')} on delivery.`);
+        res.redirect(`/listings/${id}`);
+    } catch (err) {
+        req.flash('error', 'Booking failed!');
+        res.redirect(`/listings/${id}`);
+    }
+}
+
+
+
+
+
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
+
+const rzp = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+
+module.exports.createRazorpayOrder = async (req, res) => {
+    try {
+        const { amount } = req.body; // ✅ THIS LINE MUST BE HERE
+
+        console.log("AMOUNT RECEIVED:", amount);
+
+        if (!amount || isNaN(amount)) {
+            return res.status(400).json({ message: "Invalid amount" });
+        }
+
+        const options = {
+            amount: Number(amount),
+            currency: "INR"
+        };
+
+        const order = await rzp.orders.create(options);
+
+        res.json({
+            order_id: order.id,
+            amount: order.amount
+        });
+
+    } catch (error) {
+        console.log("🔥 RAZORPAY ERROR:", error);
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
+module.exports.verifyPayment = async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const { id } = req.params;
+        
+        const sign = razorpay_order_id + '|' + razorpay_payment_id;
+        const expectedSign = crypto
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(sign.toString())
+            .digest('hex');
+
+        if (expectedSign === razorpay_signature) {
+            req.flash('success', 'Payment verified and booking confirmed!');
+            res.json({ success: true });
+
+        } else {
+            res.json({ success: false });
+        }
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false });
+    }
+}
+

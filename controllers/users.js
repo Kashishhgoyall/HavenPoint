@@ -45,6 +45,8 @@ module.exports.logIn = async (req, res) => {
     res.redirect(redirectUrl);
 }
 
+const Order = require('../models/order.js');
+
 module.exports.logOut = (req, res, next) => {
     req.logout((err) => {
         if(err) {
@@ -55,3 +57,13 @@ module.exports.logOut = (req, res, next) => {
         res.redirect('/');
     });
 }
+
+module.exports.showOrders = async (req, res) => {
+    const orders = await Order.find({ user: req.user._id })
+        .populate('listing')
+        .sort({ createdAt: -1 });
+    
+    res.render('users/orders', { orders });
+}
+
+

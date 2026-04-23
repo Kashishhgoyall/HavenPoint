@@ -1,0 +1,37 @@
+<% layout('/layouts/boilerplate.ejs') %>
+
+<h2 class="text-center mt-4">My Orders</h2>
+
+<div class="row mt-4">
+  <% if (orders.length === 0) { %>
+    <p class="text-center">No bookings yet.</p>
+  <% } %>
+
+  <% orders.forEach(order => { %>
+    <div class="col-md-6 offset-md-3 mb-3">
+      <div class="card p-3 shadow-sm">
+
+        <h5><%= order.listing.title %></h5>
+
+        <p>
+          <b>Location:</b> 
+          <%= order.listing.location %>, <%= order.listing.country %>
+        </p>
+
+        <p><b>Price:</b> ₹<%= order.amount %></p>
+
+        <p><b>Payment:</b> <%= order.paymentType %></p>
+
+        <p><b>Status:</b> 
+          <span class="badge bg-success"><%= order.status %></span>
+        </p>
+
+        <p>
+          <b>Check-in:</b> <%= order.checkIn %> <br>
+          <b>Check-out:</b> <%= order.checkOut %>
+        </p>
+
+      </div>
+    </div>
+  <% }) %>
+</div>
