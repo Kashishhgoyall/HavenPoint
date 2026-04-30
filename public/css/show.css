@@ -110,3 +110,17 @@
         padding: 0.625rem 0.875rem;
     }
 }
+.review-card{
+    border-radius: 14px;
+    transition: 0.3s ease;
+}
+
+.review-card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.listing-main-img{
+    border-radius: 16px;
+    object-fit: cover;
+}

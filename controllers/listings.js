@@ -6,14 +6,18 @@ module.exports.index = async (req, res) => {
 
     let query = {};
 
-    // Category filter
     if (category && category !== "All") {
-        query.category = category;
+        query.category = {
+            $regex: `^${category.trim()}$`,
+            $options: "i"
+        };
     }
 
-    // Location search (case-insensitive)
     if (location) {
-        query.location = { $regex: location, $options: "i" };
+        query.location = {
+            $regex: location,
+            $options: "i"
+        };
     }
 
     const allListings = await Listing.find(query);

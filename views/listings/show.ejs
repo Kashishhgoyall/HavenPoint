@@ -1,112 +1,162 @@
 <% layout('/layouts/boilerplate.ejs') %>
-
 <% block('style').append('show') %>
-<%- include('../includes/checkoutScript.ejs') %>
 
-<div class="row mt-3 mb-5">
-  <div class="col-12 col-md-6 offset-md-3 text-center mb-2">
-    <h2><%= listing.title %></h2>
-  </div>
+<div class="container mt-4 mb-5">
 
-  <div class="col-12 col-md-6 offset-md-3">
-    <div class="card shadow-sm p-4">
+  <h2 class="text-center fw-bold mb-4"><%= listing.title %></h2>
 
-      <img src="<%= listing.image.url %>" class="card-img-top s-img" />
+  <div class="row g-4">
 
-      <div class="card-body">
+    <!-- LEFT -->
+    <div class="col-lg-8">
 
-        <p><b>Owner:</b> <%= listing.owner.username %></p>
+      <img
+        src="<%= listing.image.url %>"
+        class="img-fluid w-100 listing-main-img shadow"
+        style="height:500px;"
+      >
 
+      <div class="card p-4 shadow-sm mt-4">
+        <h4>About this stay</h4>
         <p><%= listing.description %></p>
 
         <p>
-          <b>Price:</b> ₹<%= listing.price %> / night |
-          <b>Location:</b> <%= listing.location %>, <%= listing.country %>
+          <b>Owner:</b> <%= listing.owner.username %><br>
+          <b>Location:</b> <%= listing.location %>, <%= listing.country %><br>
+          <b>Price:</b> ₹<%= listing.price %> / night
         </p>
+      </div>
 
-        <% if (currUser && !currUser._id.equals(listing.owner._id)) { %>
+      <!-- MAP -->
+      <div class="card p-4 shadow-sm mt-4">
+        <h4>Where you'll be</h4>
+        <div id="map"></div>
+      </div>
 
-        <!-- ================= BOOKING SECTION ================= -->
-        <div class="card p-3 mt-3">
+      <!-- REVIEWS -->
+      <div class="card p-4 shadow-sm mt-4">
+        <h4 class="mb-3">Reviews</h4>
 
-          <h5>Book this stay</h5>
+        <% if(listing.reviews.length === 0){ %>
+          <p>No reviews yet.</p>
+        <% } %>
 
-          <!-- DATE + GUEST INPUT -->
-          <div class="mb-2">
-            <label>Check-in</label>
-            <input type="date" id="checkIn" class="form-control" required>
+        <% listing.reviews.forEach(review => { %>
+          <div class="review-card border p-3 mb-3">
+
+            <b><%= review.author.username %></b>
+
+            <div class="mb-2 text-warning">
+              <% for(let i=1;i<=5;i++){ %>
+                <% if(i <= review.rating){ %>
+                  ★
+                <% } else { %>
+                  ☆
+                <% } %>
+              <% } %>
+            </div>
+
+            <p class="review-text mb-0"><%= review.comment %></p>
+
+          </div>
+        <% }) %>
+
+        <% if(currUser){ %>
+
+        <hr>
+
+        <form method="POST" action="/listings/<%= listing._id %>/reviews">
+
+          <div class="mb-3">
+            <label>Rating</label>
+            <select class="form-select" name="review[rating]">
+              <option value="5">5 Star</option>
+              <option value="4">4 Star</option>
+              <option value="3">3 Star</option>
+              <option value="2">2 Star</option>
+              <option value="1">1 Star</option>
+            </select>
           </div>
 
-          <div class="mb-2">
-            <label>Check-out</label>
-            <input type="date" id="checkOut" class="form-control" required>
+          <div class="mb-3">
+            <label>Comment</label>
+            <textarea
+              class="form-control"
+              rows="3"
+              name="review[comment]"
+              required
+            ></textarea>
           </div>
 
-          <div class="mb-2">
-            <label>Guests</label>
-            <input type="number" id="guests" class="form-control" value="1" min="1">
-          </div>
-
-          <!-- COD -->
-          <form method="POST" action="/orders" id="codForm">
-            <input type="hidden" name="listingId" value="<%= listing._id %>">
-            <input type="hidden" name="amount" value="<%= listing.price %>">
-            <input type="hidden" name="checkIn" id="codCheckIn">
-            <input type="hidden" name="checkOut" id="codCheckOut">
-            <input type="hidden" name="guests" id="codGuests">
-
-            <button type="submit" class="btn btn-dark w-100 mt-2">
-              Pay at Property (COD)
-            </button>
-          </form>
-
-          <!-- RAZORPAY -->
-          <button 
-            class="btn btn-success w-100 mt-2 razorpay-btn"
-            data-listing-id="<%= listing._id %>"
-            data-price="<%= listing.price %>">
-            Pay Online
+          <button class="btn btn-dark">
+            Submit Review
           </button>
 
-        </div>
-        <!-- =================================================== -->
+        </form>
+
+        <% } else { %>
+
+          <a href="/login" class="btn btn-outline-dark">
+            Login to Review
+          </a>
 
         <% } %>
 
       </div>
+
     </div>
+
+    <!-- RIGHT -->
+    <div class="col-lg-4">
+
+      <% if (currUser && !currUser._id.equals(listing.owner._id)) { %>
+
+      <div class="card p-4 shadow-sm sticky-top" style="top:90px;">
+        <h4>Book this stay</h4>
+
+        <input type="date" class="form-control mb-2" id="checkIn">
+        <input type="date" class="form-control mb-2" id="checkOut">
+        <input type="number" class="form-control mb-3" id="guests" value="1" min="1">
+
+        <form method="POST" action="/orders">
+          <input type="hidden" name="listingId" value="<%= listing._id %>">
+          <input type="hidden" name="amount" value="<%= listing.price %>">
+
+          <button class="btn btn-dark w-100 mb-2">
+            Pay at Property
+          </button>
+        </form>
+
+        <button
+          class="btn btn-success w-100 razorpay-btn"
+          data-listing-id="<%= listing._id %>"
+          data-price="<%= listing.price %>">
+          Pay Online
+        </button>
+
+      </div>
+
+      <% } %>
+
+    </div>
+
   </div>
+
 </div>
 
 <script>
-  const checkIn = document.getElementById("checkIn");
-  const checkOut = document.getElementById("checkOut");
-  const guests = document.getElementById("guests");
+const coords = <%- JSON.stringify(listing.geometry.coordinates) %>;
 
-  const codCheckIn = document.getElementById("codCheckIn");
-  const codCheckOut = document.getElementById("codCheckOut");
-  const codGuests = document.getElementById("codGuests");
+const map = L.map('map').setView(
+  [coords[1], coords[0]], 11
+);
 
-  const codForm = document.getElementById("codForm");
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19
+}).addTo(map);
 
-  function updateFields() {
-    codCheckIn.value = checkIn.value;
-    codCheckOut.value = checkOut.value;
-    codGuests.value = guests.value;
-  }
-
-  checkIn?.addEventListener("change", updateFields);
-  checkOut?.addEventListener("change", updateFields);
-  guests?.addEventListener("input", updateFields);
-
-  // 🔥 VALIDATION BEFORE COD SUBMIT
-  codForm?.addEventListener("submit", function(e) {
-    if (!checkIn.value || !checkOut.value) {
-      e.preventDefault();
-      alert("Please select check-in and check-out dates");
-    } else if (new Date(checkOut.value) <= new Date(checkIn.value)) {
-      e.preventDefault();
-      alert("Check-out must be after check-in");
-    }
-  });
+L.marker([coords[1], coords[0]])
+.addTo(map)
+.bindPopup("<%= listing.title %>")
+.openPopup();
 </script>
